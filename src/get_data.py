@@ -14,7 +14,8 @@ Requirements:
 import time
 import numpy as np
 import pandas as pd
-from nba_api.stats.endpoints import leaguedashlineups, leaguedashplayerstats
+from nba_api.stats.endpoints import leaguedashlineups, leaguedashplayerstats, teamdashlineups
+from nba_api.stats.static import teams
 
 
 # ── CONFIG ────────────────────────────────────────────────────────────────────
@@ -57,18 +58,44 @@ def get_player_stats(season: str) -> pd.DataFrame:
 def get_lineups(season: str, group_size: int) -> pd.DataFrame:
     """
     Fetches all lineup combinations of a given group size for a season.
+    Iterates through all teams to bypass the 2000 row API limit on LeagueDashLineups.
     """
     print(f"  Fetching {group_size}-man lineups for {season}...")
-    df = leaguedashlineups.LeagueDashLineups(
-        season=season,
-        measure_type_detailed_defense='Advanced',
-        per_mode_detailed='PerGame',
-        group_quantity=group_size,
-    ).get_data_frames()[0]
+    
+    nba_teams = teams.get_teams()
+    team_dfs = []
+    
+    for team in nba_teams:
+        team_id = team['id']
+        success = False
+        retries = 3
+        while not success and retries > 0:
+            try:
+                team_df = teamdashlineups.TeamDashLineups(
+                    team_id=team_id,
+                    season=season,
+                    measure_type_detailed_defense='Advanced',
+                    per_mode_detailed='PerGame',
+                    group_quantity=group_size,
+                    timeout=60
+                ).get_data_frames()[1]  # index 1 usually has the lineup data for TeamDashLineups
+                team_dfs.append(team_df)
+                success = True
+                time.sleep(1)  # respect NBA API rate limits
+            except Exception as e:
+                print(f"    Timeout/error for team {team_id}, retries left: {retries - 1}")
+                retries -= 1
+                time.sleep(5)  # Backoff before retrying
+                if retries == 0:
+                    print(f"    Failed to fetch team {team_id}")
+        
+    if not team_dfs:
+        return pd.DataFrame()
+        
+    df = pd.concat(team_dfs, ignore_index=True)
 
     df['season'] = season
     df['group_size'] = group_size
-    time.sleep(1)   # respect NBA API rate limits
     return df
 
 
