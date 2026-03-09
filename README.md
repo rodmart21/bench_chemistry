@@ -98,9 +98,3 @@ Every base metric has a corresponding `_RANK` column. Rank variables indicate wh
 | PIE_RANK | Lineup has a minimal or negative impact on the game |
 
 > **Note:** The dataset also includes ranks for volume metrics like `GP_RANK`, `W_RANK`, `L_RANK`, `W_PCT_RANK`, `MIN_RANK`, `AST_PCT_RANK`, `AST_TO_RANK`, `AST_RATIO_RANK`, `OREB_PCT_RANK`, `DREB_PCT_RANK`, `PACE_RANK`.
-
----
-
-## Usage Note
-
-When analyzing lineup data, it is **highly recommended** to filter by a minimum threshold for `MIN` (e.g., > 50 minutes) or `POSS`. Lineups with very few minutes often produce extreme statistical outliers that do not reflect true performance.
