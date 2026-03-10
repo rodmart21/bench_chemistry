@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-import umap
+import hdbscan.umap as umap
 import hdbscan
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import silhouette_score

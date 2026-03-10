@@ -111,18 +111,25 @@ def parse_player_ids(group_id: str) -> list[str]:
 
 # ── STEP 4: Compute expected NET_RATING for a lineup ─────────────────────────
 
-def compute_expected_net(player_ids: list[str], player_lookup: dict) -> float | None:
-    """
-    Expected NET_RATING = simple average of each player's individual NET_RATING.
-    Returns None if any player is missing from the lookup (insufficient data).
-    """
+def compute_expected_net(player_ids: list[str], 
+                         player_lookup: dict,
+                         minutes_lookup: dict) -> float | None:
     ratings = []
+    minutes = []
     for pid in player_ids:
         rating = player_lookup.get(pid)
-        if rating is None or pd.isna(rating):
+        mins   = minutes_lookup.get(pid)
+        if rating is None or mins is None or pd.isna(rating) or pd.isna(mins):
             return None
         ratings.append(rating)
-    return np.mean(ratings)
+        minutes.append(mins)
+
+    total_min = sum(minutes)
+    if total_min == 0:
+        return np.mean(ratings)   # fallback if minutes are all zero
+
+    # Players with more minutes pull the expected value more
+    return sum(r * m for r, m in zip(ratings, minutes)) / total_min
 
 
 def compute_expected_metric(player_ids: list[str], player_lookup: dict) -> float | None:
