@@ -66,8 +66,8 @@ ARCHETYPE_LABELS = {
 
 def load_data():
     print("Loading data...")
-    players  = pd.read_csv('player_stats.csv')
-    lineups  = pd.read_csv('lineups_with_synergy.csv')
+    players  = pd.read_csv('results/player_stats.csv')
+    lineups  = pd.read_csv('results/synergy/lineups_with_synergy.csv')
     players['PLAYER_ID'] = players['PLAYER_ID'].astype(str)
     print(f"  {len(players)} player-season rows")
     print(f"  {len(lineups)} lineup rows")

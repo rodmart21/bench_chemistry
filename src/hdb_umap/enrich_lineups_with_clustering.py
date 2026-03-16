@@ -34,8 +34,8 @@ ARCHETYPE_LABELS = {
     5: "Spot-Up Shooter",
 }
 
-PLAYERS_FILE             = 'player_archetypes_best.csv'
-LINEUPS_FILE             = 'lineups_with_synergy.csv'
+PLAYERS_FILE             = 'results/umap/player_archetypes_best.csv'
+LINEUPS_FILE             = 'results/synergy/lineups_with_synergy.csv'
 ASSIGN_NOISE_TO_NEAREST  = True   # False = drop lineups with noise players instead
 
 

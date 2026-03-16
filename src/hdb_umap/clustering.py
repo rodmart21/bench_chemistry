@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-import hdbscan.umap as umap
+import umap
 import hdbscan
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import silhouette_score
@@ -69,7 +69,7 @@ MAX_NOISE_RATIO    = 0.30 # skip results where >30% of players are noise
 # ══════════════════════════════════════════════════════════════════════════════
 
 def load_players(min_gp=MIN_GP):
-    players = pd.read_csv('player_stats.csv')
+    players = pd.read_csv('results/player_stats.csv')
     players['PLAYER_ID'] = players['PLAYER_ID'].astype(str)
     df = players[players['GP'] >= min_gp].copy().reset_index(drop=True)
     print(f"Loaded {len(df)} players with {min_gp}+ games\n")
@@ -253,6 +253,37 @@ def plot_best(df, best_row):
     plt.savefig('umap_best_result.png', dpi=150)
     plt.close()
     print("  Saved umap_best_result.png")
+
+    # ── FEATURE PENETRATION MAP (CLUSTER PROFILE) ─────────────────────────────────
+    features_to_plot = [f for f in ['USG_PCT', 'AST_PCT', 'OREB_PCT', 'DREB_PCT', 'TS_PCT', 'REB_PCT', 'PIE'] if f in df.columns]
+    
+    global_means = df[features_to_plot].mean()
+    global_stds  = df[features_to_plot].std()
+    
+    cluster_profiles = []
+    cluster_labels = sorted([x for x in df['cluster'].unique() if x != -1])
+    
+    for c in cluster_labels:
+        sub = df[df['cluster'] == c]
+        cluster_means = sub[features_to_plot].mean()
+        # Calculate z-score of the cluster mean relative to the global population
+        z_scores = (cluster_means - global_means) / global_stds
+        z_scores.name = f'Cluster {c}'
+        cluster_profiles.append(z_scores)
+        
+    if cluster_profiles:
+        profile_df = pd.DataFrame(cluster_profiles)
+        
+        fig_heat, ax_heat = plt.subplots(figsize=(10, len(cluster_labels) * 0.8 + 2))
+        sns.heatmap(profile_df, annot=True, cmap='RdBu_r', center=0, fmt='.2f',
+                    linewidths=0.5, cbar_kws={'label': 'Z-Score (Deviation from Global Mean)'}, ax=ax_heat)
+        
+        ax_heat.set_title("Cluster Penetration Map (Feature Importance per Cluster)", fontweight='bold', pad=15)
+        ax_heat.set_ylabel("Cluster")
+        plt.tight_layout()
+        plt.savefig('cluster_penetration_map.png', dpi=150, bbox_inches='tight')
+        plt.close(fig_heat)
+        print("  Saved cluster_penetration_map.png")
 
     # Print cluster summary
     print(f"\n── Cluster Summary (best config) {'─'*40}")

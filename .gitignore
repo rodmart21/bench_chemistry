@@ -210,3 +210,4 @@ __marimo__/
 # *.ipynb
 *.csv
 *.png
+*.pkl

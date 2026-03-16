@@ -57,8 +57,8 @@ CLUSTER_FEATURES = [
 # ── LOAD & PREP ───────────────────────────────────────────────────────────────
 
 def load_and_scale():
-    print("Loading player_stats.csv...")
-    players = pd.read_csv('player_stats.csv')
+    print("Loading results/player_stats.csv...")
+    players = pd.read_csv('results/player_stats.csv')
     players['PLAYER_ID'] = players['PLAYER_ID'].astype(str)
 
     df = players[players['GP'] >= MIN_GP].copy()
